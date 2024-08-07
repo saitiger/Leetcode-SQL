@@ -1,0 +1,11 @@
+select eu.unique_id,e.name 
+from
+Employees e 
+left join 
+EmployeeUNI eu
+on e.id = eu.id
+
+Pandas
+
+def replace_employee_id(employees: pd.DataFrame, employee_uni: pd.DataFrame) -> pd.DataFrame:
+    return employees.merge(employee_uni,left_on='id',right_on='id',how='left')[['unique_id','name']]
