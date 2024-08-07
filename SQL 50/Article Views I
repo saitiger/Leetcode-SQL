@@ -1,0 +1,11 @@
+select author_id id 
+from
+views
+where author_id = viewer_id 
+group by 1
+order by 1
+
+Pandas
+
+def article_views(views: pd.DataFrame) -> pd.DataFrame:
+    return views[views['author_id']==views['viewer_id']][['author_id']].rename(columns={'author_id':'id'}).drop_duplicates().sort_values(by = 'id',ascending = True)
