@@ -1,0 +1,29 @@
+select max(num) num 
+from (
+select num,count(*) cnt
+from
+MyNumbers
+group by 1
+)x
+where 
+cnt = 1
+
+Pandas
+  
+def biggest_single_number(my_numbers: pd.DataFrame) -> pd.DataFrame:   
+    
+    # d = my_numbers.groupby('num')['num'].count()
+    # res = d[d==1].index 
+    # print(max(res))
+  
+    d = my_numbers['num'].value_counts()
+
+    unique_idx = d[d == 1].index
+
+    largest_single_number = unique_idx.max() if not unique_idx.empty else None
+
+    # result = pd.DataFrame({'num': [largest_single_number]})
+
+    return result
+  
+    # return my_numbers.drop_duplicates(keep = False).max().to_frame(name = 'num')
