@@ -1,0 +1,36 @@
+WITH PreviousWeatherData AS
+(
+    SELECT 
+        id,
+        recordDate,
+        temperature, 
+        LAG(temperature, 1) OVER (ORDER BY recordDate) AS PreviousTemperature,
+        LAG(recordDate, 1) OVER (ORDER BY recordDate) AS PreviousRecordDate
+    FROM 
+        Weather
+)
+SELECT 
+    id 
+FROM 
+    PreviousWeatherData
+WHERE 
+    temperature > PreviousTemperature
+AND 
+    recordDate = DATE_ADD(PreviousRecordDate, INTERVAL 1 DAY);
+
+Pandas 
+
+def rising_temperature(weather: pd.DataFrame) -> pd.DataFrame:
+    weather['recordDate'] = pd.to_datetime(weather['recordDate'])
+    
+    weather.sort_values('recordDate', inplace=True)
+    
+    weather['PreviousTemperature'] = weather['temperature'].shift(1)
+    weather['PreviousRecordDate'] = weather['recordDate'].shift(1)
+    
+    result = weather[
+        (weather['temperature'] > weather['PreviousTemperature']) & 
+        (weather['recordDate'] == weather['PreviousRecordDate'] + pd.Timedelta(days=1))
+    ][['id']].rename(columns={'id': 'Id'})
+    
+    return result
