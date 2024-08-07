@@ -1,0 +1,10 @@
+select tweet_id
+from
+Tweets
+where 
+char_length(content)>15
+
+Pandas
+
+def invalid_tweets(tweets: pd.DataFrame) -> pd.DataFrame:
+    return tweets[tweets['content'].str.len()>15][['tweet_id']]
