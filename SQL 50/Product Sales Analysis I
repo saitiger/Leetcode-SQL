@@ -1,0 +1,10 @@
+select p.product_name, s.year, s.price 
+from
+Sales s
+join
+Product p
+on s.product_id = p.product_id
+
+Pandas
+def sales_analysis(sales: pd.DataFrame, product: pd.DataFrame) -> pd.DataFrame:
+    return sales.merge(product,on='product_id')[['product_name','year','price']]
