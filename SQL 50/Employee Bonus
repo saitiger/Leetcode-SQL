@@ -1,0 +1,13 @@
+select name,bonus 
+from
+Employee e 
+left join 
+Bonus b
+on e.empId = b.empId
+where bonus < 1000 or bonus is null
+
+Pandas 
+
+def employee_bonus(employee: pd.DataFrame, bonus: pd.DataFrame) -> pd.DataFrame:
+    merged_df = employee.merge(bonus,on = 'empId',how='left')
+    return merged_df[(merged_df['bonus']<1000) | (merged_df['bonus'].isna())][['name','bonus']]
