@@ -1,0 +1,28 @@
+select 
+DATE_FORMAT(trans_date,'%Y-%m') "month",
+country,
+count(*) trans_count,
+sum(case when state = 'approved' then 1 else 0 end) as approved_count,
+sum(amount) trans_total_amount,
+sum(case when state = 'approved' then amount else 0 end) as approved_total_amount
+from 
+Transactions 
+group by 1,2
+
+Pandas 
+
+import pandas as pd
+
+def monthly_transactions(transactions: pd.DataFrame) -> pd.DataFrame:
+
+    transactions['month'] = pd.to_datetime(transactions['trans_date']).dt.strftime('%Y-%m')
+    
+    df = transactions.groupby(['month','country'],dropna=False).agg(
+        trans_count = ('id','count'),
+        approved_count = ('state',lambda x: (x=='approved').sum()),
+        trans_total_amount = ('amount','sum'),
+        approved_total_amount=('amount', lambda x: x[transactions.loc[x.index, 'state'] == 'approved'].sum())
+    ).reset_index()
+
+    return df
+    
