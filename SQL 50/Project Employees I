@@ -1,0 +1,27 @@
+select 
+p.project_id,
+round(avg(e.experience_years),2) average_years
+from
+project p 
+left join
+employee e
+on p.employee_id = e.employee_id
+group by 1 
+
+Pandas 
+
+def project_employees_i(project: pd.DataFrame, employee: pd.DataFrame) -> pd.DataFrame:
+    merged_df = project.merge(employee,how = 'left',on = 'employee_id')
+    exp = merged_df.groupby('project_id')['experience_years'].sum().reset_index(name = 'exp')
+    emp = merged_df.groupby('project_id')['experience_years'].count().reset_index(name = 'emp_count')
+
+    res = exp.merge(emp, on = 'project_id')
+
+    res['average_years'] = round(res['exp']/res['emp_count'],2)
+    
+    return res[['project_id','average_years']]
+
+    # USING LAMBDA FUNCTION
+    merged_df = project.merge(employee,how = 'left',on = 'employee_id')[['project_id','experience_years']]
+    
+    return merged_df.groupby('project_id').apply(lambda x: round(x['experience_years'].sum()/x['experience_years'].count(),2)).reset_index(name='average_years')
