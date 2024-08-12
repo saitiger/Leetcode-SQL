@@ -1,0 +1,13 @@
+select 
+activity_date as day ,
+count(distinct(user_id)) as active_users 
+from activity 
+where activity_date >='2019-06-28' 
+and activity_date<= '2019-07-27' 
+group by 1;
+
+Pandas 
+def user_activity(activity: pd.DataFrame) -> pd.DataFrame:
+    activity = activity[(activity.activity_date >='2019-06-28') & (activity.activity_date <='2019-07-27')]
+    activity= activity.groupby('activity_date')['user_id'].nunique().reset_index().rename(columns={'activity_date':'day', 'user_id':'active_users'})
+    return activity
