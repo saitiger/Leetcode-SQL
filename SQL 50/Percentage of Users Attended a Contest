@@ -1,0 +1,36 @@
+select 
+contest_id,
+round(100.0*count(user_id)/(select count(user_id) from
+Users),2) percentage
+from 
+Register 
+group by 1
+order by 2 desc,1
+
+Pandas 
+
+import pandas as pd
+
+def users_percentage(users: pd.DataFrame, register: pd.DataFrame) -> pd.DataFrame:
+    
+    total_users = users["user_id"].nunique()
+
+    reg_cnt = (
+        register.groupby("contest_id")["user_id"]
+        .count()
+        .reset_index(name = "cnt_user")
+    )
+
+    reg_cnt["percentage"] = (
+        reg_cnt["cnt_user"] / total_users
+    ) * 100
+
+    reg_cnt["percentage"] = reg_cnt["percentage"].round(2)
+
+    reg_cnt = reg_cnt.sort_values(
+        by=["percentage", "contest_id"], ascending=[False, True]
+    )
+
+    final_df = reg_cnt[["contest_id", "percentage"]]
+
+    return final_df
