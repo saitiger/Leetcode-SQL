@@ -1,0 +1,20 @@
+with cte as
+(
+select managerId as candidate
+from 
+Employee 
+group by managerId
+having count(*)>=5)
+select name 
+from cte c 
+join
+Employee e 
+on e.id = c.candidate
+
+Pandas 
+
+def find_managers(employee: pd.DataFrame) -> pd.DataFrame:
+
+    df = employee.groupby('managerId')['name'].count().reset_index()
+    df = df[df['name']>=5][['managerId']]
+    return employee[employee['id'].isin(df['managerId'])][['name']]
