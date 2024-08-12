@@ -1,0 +1,33 @@
+select s.user_id,
+coalesce(round(sum(case when action = 'confirmed' then 1 else 0 end)/count(*),2),0) as confirmation_rate
+from
+signups s left join Confirmations c
+on s.user_id = c.user_id
+group by 1
+
+Pandas 
+
+import pandas as pd
+
+def confirmation_rate(signups: pd.DataFrame, confirmations: pd.DataFrame) -> pd.DataFrame:
+    
+    total_confirmations = confirmations.groupby('user_id')['action'].count().reset_index(name='total')
+    
+    confirmed_count = confirmations[confirmations['action'] == 'confirmed'].groupby('user_id')['action'].count().reset_index(name='confirmed')
+    
+    result_df = signups.merge(total_confirmations, on='user_id', how='left').merge(confirmed_count, on='user_id', how='left')
+    
+    result_df['total'] = result_df['total'].fillna(0)
+    result_df['confirmed'] = result_df['confirmed'].fillna(0)
+    
+    result_df['confirmation_rate'] = (result_df['confirmed'] / result_df['total']).fillna(0).round(2)
+    
+    result_df = result_df[['user_id', 'confirmation_rate']].sort_values(by='user_id').reset_index(drop=True)
+    
+    return result_df
+
+# Shorter Code
+    confirmations['confirmation_rate'] = confirmations['action'].apply(lambda x:1 if x == 'confirmed' else 0)
+    avg_conf = confirmations[['user_id','confirmation_rate']].groupby('user_id')['confirmation_rate'].mean().round(2).reset_index()
+    output = pd.merge(signups['user_id'],avg_conf,how='left').fillna(0)  
+    return output
