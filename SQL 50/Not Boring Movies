@@ -1,0 +1,9 @@
+select * 
+from cinema 
+where description!="boring" 
+and id%2=1 
+order by rating desc;
+
+Pandas
+def not_boring_movies(cinema: pd.DataFrame) -> pd.DataFrame:
+    return cinema[(cinema['description']!='boring')&(cinema['id']%2!=0)].sort_values(by = 'rating',ascending = False) 
