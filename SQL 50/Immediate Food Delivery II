@@ -1,0 +1,25 @@
+with first_order as (
+select *,
+rank() over (partition by customer_id order by order_date) rnk,
+case when order_date=customer_pref_delivery_date then 'immediate' else 'scheduled' end as status
+from
+delivery
+)
+select 
+round(100.0* (count(*)/(select count(distinct customer_id) from delivery)),2)
+immediate_percentage
+from 
+first_order
+where 
+status = 'immediate'
+and 
+rnk = 1
+
+Pandas 
+def immediate_food_delivery(delivery: pd.DataFrame) -> pd.DataFrame:
+    delivery= delivery.sort_values(['customer_id','order_date']).drop_duplicates('customer_id',keep='first')
+    delivery.loc[delivery.customer_pref_delivery_date==delivery.order_date,'type']='immediate'
+    delivery.loc[delivery.customer_pref_delivery_date!=delivery.order_date,'type']='scheduled'
+    df=delivery.head(1)
+    df['immediate_percentage']=((delivery[delivery.type=='immediate'].shape[0]/delivery.customer_id.nunique())*100)
+    return df[['immediate_percentage']].round(2)
