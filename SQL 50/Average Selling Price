@@ -1,0 +1,26 @@
+with cte 
+as (select 
+p.product_id,
+u.units,
+coalesce(p.price,0) price
+from
+prices p 
+left join 
+UnitsSold u 
+on p.product_id = u.product_id
+and 
+u.purchase_date between p.start_date and p.end_date
+)
+select product_id,
+coalesce(round(1.0 * sum(price*units)/sum(units),2),0) average_price
+from
+cte 
+group by 1
+
+Pandas
+
+def average_selling_price(prices: pd.DataFrame, units_sold: pd.DataFrame) -> pd.DataFrame:
+    df = pd.merge(prices, units_sold, on='product_id', how='left')
+    df = df[df.purchase_date.isna() | ((df.purchase_date >= df.start_date) & (df.purchase_date <= df.end_date))]
+    result = df.groupby('product_id').apply(lambda x: round((x['price'] * x['units']).sum() / x['units'].sum(), 2) if x['units'].sum() != 0 else 0).reset_index(name='average_price')
+    return result
