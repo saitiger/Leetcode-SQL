@@ -1,0 +1,14 @@
+select 
+query_name,
+round(avg(rating/position),2) quality,
+round(100.0*sum(case when rating<3 then 1 else 0 end)/count(*),2) poor_query_percentage
+from
+Queries
+where query_name is not null
+group by 1
+
+Pandas 
+def queries_stats(queries: pd.DataFrame) -> pd.DataFrame:
+    queries['quality']=queries.rating/queries.position +1e-6
+    queries['poor_query_percentage']=(queries.rating<3)*100
+    return queries.groupby('query_name')[['quality','poor_query_percentage']].mean().round(2).reset_index()
