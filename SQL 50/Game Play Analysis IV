@@ -1,0 +1,32 @@
+select
+    round(count(player_id) /  (select count(distinct player_id) from activity), 2) as fraction
+from (
+    select
+        player_id,
+        event_date,
+        row_number() over (partition by player_id order by event_date asc) as login_rank,
+        lead(event_date) over (partition by player_id order by event_date asc) as next_login
+    from
+        activity
+) login_table
+where 
+ login_table.login_rank = 1 and
+ login_table.next_login is not null and
+ datediff(login_table.next_login, login_table.event_date) = 1
+
+Pandas 
+
+def gameplay_analysis(activity: pd.DataFrame) -> pd.DataFrame:
+    first_login = activity.groupby('player_id')['event_date'].min().reset_index()
+    
+    activity['day_before_event'] = activity['event_date'] - pd.to_timedelta(1, unit='D')
+    
+    merged_df = activity.merge(first_login, on='player_id')
+    
+    consecutive_login = merged_df[merged_df['day_before_event'] == merged_df['event_date_first']]
+    
+    fraction = round(consecutive_login['player_id'].nunique() / activity['player_id'].nunique(), 2)
+    
+    output_df = pd.DataFrame({'fraction': [fraction]})
+    
+    return output_df
