@@ -1,0 +1,48 @@
+-- Step 1: Join Visits with Transactions to include all visits, even those with no transactions
+WITH VisitTransactions AS (
+    SELECT 
+        v.user_id, 
+        v.visit_date, 
+        t.transaction_date, 
+        t.amount
+    FROM Visits v
+    LEFT JOIN Transactions t 
+        ON v.user_id = t.user_id 
+        AND v.visit_date = t.transaction_date
+),
+
+-- Step 2: Count the number of transactions per visit
+VisitTransactionCounts AS (
+    SELECT 
+        user_id, 
+        visit_date, 
+        SUM(CASE WHEN amount IS NULL THEN 0 ELSE 1 END) AS transaction_count
+    FROM VisitTransactions
+    GROUP BY user_id, visit_date
+),
+
+-- Step 3: Find the maximum number of transactions across all visits
+MaxTransactionCount AS (
+    SELECT 
+        MAX(transaction_count) AS max_transaction_count
+    FROM VisitTransactionCounts
+),
+
+-- Step 4: Generate a sequence of numbers from 0 to the maximum number of transactions
+TransactionCountSequence AS (
+    SELECT 0 AS transaction_count
+    UNION ALL
+    SELECT transaction_count + 1
+    FROM TransactionCountSequence
+    WHERE transaction_count < (SELECT max_transaction_count FROM MaxTransactionCount)
+)
+
+-- Step 5: Count how many visits fall into each transaction count category
+SELECT 
+    transaction_count,
+    COUNT(v.transaction_count) AS visit_count
+FROM TransactionCountSequence seq
+LEFT JOIN VisitTransactionCounts v
+    ON seq.transaction_count = v.transaction_count
+GROUP BY seq.transaction_count
+ORDER BY seq.transaction_count;
