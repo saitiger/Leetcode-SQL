@@ -18,6 +18,20 @@ WHERE
 AND 
     recordDate = DATE_ADD(PreviousRecordDate, INTERVAL 1 DAY);
 
+Postgres
+
+WITH temp_prev AS (
+    SELECT id, recordDate, temperature, 
+           LAG(temperature, 1) OVER (ORDER BY recordDate) AS prev_temp, 
+           LAG(recordDate, 1) OVER (ORDER BY recordDate) AS prev_date 
+    FROM Weather
+)
+SELECT id 
+FROM temp_prev 
+WHERE prev_temp < temperature 
+  AND recordDate - prev_date = 1;
+
+
 Pandas 
 
 def rising_temperature(weather: pd.DataFrame) -> pd.DataFrame:
